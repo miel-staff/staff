@@ -408,7 +408,10 @@
         weeklyMin: 3,
         minDuration: 60,
         meeting: 'Domingo 20:00',
-        staffList: ['Staff 1', 'Staff 2', 'Staff 3']
+        staffList: ['Staff 1', 'Staff 2', 'Staff 3'],
+        maxStaffNormalRoom: 2,
+        maxStaffLargeRoom: 3,
+        requireEvidence: true
       },
       events: [],
       proposals: []
@@ -416,12 +419,53 @@
 
     let state = loadState();
 
+    function normalizeConfig(config) {
+      const merged = { ...defaultState.config, ...(config || {}) };
+
+      if (!Array.isArray(merged.staffList)) {
+        merged.staffList = String(merged.staffList || '')
+          .split(/[
+,]/)
+          .map(name => name.trim())
+          .filter(Boolean);
+      }
+
+      merged.weeklyMin = Number(merged.weeklyMin || defaultState.config.weeklyMin);
+      merged.minDuration = Number(merged.minDuration || defaultState.config.minDuration);
+      merged.maxStaffNormalRoom = Number(merged.maxStaffNormalRoom || defaultState.config.maxStaffNormalRoom);
+      merged.maxStaffLargeRoom = Number(merged.maxStaffLargeRoom || defaultState.config.maxStaffLargeRoom);
+      merged.meeting = merged.meeting || defaultState.config.meeting;
+      merged.requireEvidence = merged.requireEvidence !== false;
+
+      return merged;
+    }
+
     function loadState() {
       try {
         const saved = localStorage.getItem(STORAGE_KEY);
-        return saved ? JSON.parse(saved) : structuredClone(defaultState);
+        if (!saved) return structuredClone(defaultState);
+
+        const parsed = JSON.parse(saved);
+        return {
+          ...structuredClone(defaultState),
+          ...parsed,
+          config: normalizeConfig(parsed.config)
+        };
       } catch {
         return structuredClone(defaultState);
+      }
+    }
+
+    async function loadExternalConfig() {
+      try {
+        const response = await fetch('./config.json?v=' + Date.now(), { cache: 'no-store' });
+        if (!response.ok) return;
+
+        const externalConfig = await response.json();
+        state.config = normalizeConfig(externalConfig.config || externalConfig);
+        saveState();
+      } catch (error) {
+        console.warn('No se pudo cargar config.json:', error);
       }
     }
 
@@ -541,9 +585,9 @@
       const warnings = [];
       const staffCount = 1 + parseSupport(event.supportStaff).length;
       if (event.duration < state.config.minDuration) warnings.push(`Duración inferior al mínimo de ${state.config.minDuration} min.`);
-      if (event.room === 'Sala normal' && staffCount > 2) warnings.push('Sala normal con más de 2 staff asignados.');
-      if (event.room === 'Sala grande' && staffCount > 3) warnings.push('Sala grande con más de 3 staff asignados.');
-      if (['Realizado', 'Aprobado'].includes(event.status) && !event.evidence) warnings.push('Faltan evidencias o links de logs.');
+      if (event.room === 'Sala normal' && staffCount > state.config.maxStaffNormalRoom) warnings.push(`Sala normal con más de ${state.config.maxStaffNormalRoom} staff asignados.`);
+      if (event.room === 'Sala grande' && staffCount > state.config.maxStaffLargeRoom) warnings.push(`Sala grande con más de ${state.config.maxStaffLargeRoom} staff asignados.`);
+      if (state.config.requireEvidence && ['Realizado', 'Aprobado'].includes(event.status) && !event.evidence) warnings.push('Faltan evidencias o links de logs.');
       if (['Evento especial', 'Torneo'].includes(event.type) && event.status !== 'Aprobado' && event.status !== 'Realizado') warnings.push('Evento especial/torneo pendiente de aprobación.');
       return warnings;
     }
@@ -733,8 +777,10 @@
       document.getElementById('rulesText').textContent = `:actyellowhearts: Normativa de actividades del staff :actyellowhearts:\n\n` +
       `:arrowlg: Mínimo de actividades semanales por staff: ${state.config.weeklyMin}\n` +
       `:arrowlg: Duración mínima por actividad: ${state.config.minDuration} min\n` +
-      `:arrowlg: Máximo recomendado en sala normal: 2 staff\n` +
-      `:arrowlg: Máximo recomendado en sala grande: 3 staff\n` +
+      `:arrowlg: Máximo recomendado en sala normal: ${state.config.maxStaffNormalRoom} staff
+` +
+      `:arrowlg: Máximo recomendado en sala grande: ${state.config.maxStaffLargeRoom} staff
+` +
       `:arrowlg: Cada actividad debe tener staff principal, juego/dinámica, sala/canal y horario definido.\n` +
       `:arrowlg: Las capturas, evidencias o links de logs son obligatorios al cerrar una actividad.\n` +
       `:arrowlg: No cuentan salas puramente sociales sin dinámica organizada.\n` +
@@ -786,8 +832,10 @@
     }
 
     document.querySelector('#eventForm [name="date"]').value = todayISO();
-    document.querySelector('#eventForm [name="duration"]').value = state.config.minDuration;
-    renderAll();
+    loadExternalConfig().finally(() => {
+      document.querySelector('#eventForm [name="duration"]').value = state.config.minDuration;
+      renderAll();
+    });
   </script>
 </body>
 </html>
