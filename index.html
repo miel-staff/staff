@@ -1,0 +1,793 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Panel de Eventos Staff</title>
+  <style>
+    :root {
+      --bg: #0f1117;
+      --panel: #171a23;
+      --panel-2: #1f2430;
+      --text: #f4f7fb;
+      --muted: #9aa4b2;
+      --line: #2d3442;
+      --accent: #ffcc4d;
+      --accent-2: #5865f2;
+      --success: #22c55e;
+      --warn: #f59e0b;
+      --danger: #ef4444;
+      --radius: 18px;
+      --shadow: 0 18px 50px rgba(0,0,0,.35);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background:
+        radial-gradient(circle at top left, rgba(88,101,242,.20), transparent 35%),
+        radial-gradient(circle at top right, rgba(255,204,77,.12), transparent 32%),
+        var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    header {
+      padding: 28px 22px 10px;
+      max-width: 1260px;
+      margin: 0 auto;
+    }
+
+    .hero {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      gap: 20px;
+      padding: 26px;
+      background: linear-gradient(135deg, rgba(255,255,255,.08), rgba(255,255,255,.03));
+      border: 1px solid rgba(255,255,255,.08);
+      border-radius: 26px;
+      box-shadow: var(--shadow);
+    }
+
+    h1, h2, h3 { margin: 0; }
+
+    h1 { font-size: clamp(28px, 4vw, 48px); line-height: 1; }
+    h2 { font-size: 24px; margin-bottom: 16px; }
+    h3 { font-size: 17px; margin-bottom: 10px; }
+
+    .subtitle {
+      color: var(--muted);
+      margin-top: 12px;
+      max-width: 760px;
+      line-height: 1.6;
+    }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 12px;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,.1);
+      background: rgba(255,255,255,.06);
+      color: var(--muted);
+      font-size: 13px;
+      white-space: nowrap;
+    }
+
+    main {
+      max-width: 1260px;
+      margin: 0 auto;
+      padding: 18px 22px 46px;
+    }
+
+    nav {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin: 18px 0;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      padding: 10px 0;
+      backdrop-filter: blur(18px);
+    }
+
+    .tab-btn, button, .small-btn {
+      border: 0;
+      cursor: pointer;
+      border-radius: 14px;
+      background: var(--panel-2);
+      color: var(--text);
+      padding: 11px 14px;
+      font-weight: 700;
+      transition: transform .15s ease, background .15s ease, opacity .15s ease;
+    }
+
+    .tab-btn:hover, button:hover, .small-btn:hover { transform: translateY(-1px); }
+    .tab-btn.active { background: var(--accent-2); }
+
+    .primary { background: var(--accent); color: #111827; }
+    .danger { background: rgba(239,68,68,.16); color: #fecaca; border: 1px solid rgba(239,68,68,.28); }
+    .ghost { background: transparent; border: 1px solid var(--line); color: var(--muted); }
+
+    .section { display: none; }
+    .section.active { display: block; }
+
+    .grid { display: grid; gap: 16px; }
+    .grid-4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+    .grid-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    .grid-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+
+    .card {
+      background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.025));
+      border: 1px solid rgba(255,255,255,.08);
+      border-radius: var(--radius);
+      padding: 18px;
+      box-shadow: 0 12px 28px rgba(0,0,0,.22);
+    }
+
+    .stat-value { font-size: 34px; font-weight: 900; margin: 6px 0 2px; }
+    .stat-label { color: var(--muted); font-size: 14px; }
+
+    label {
+      display: block;
+      margin-bottom: 7px;
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    input, select, textarea {
+      width: 100%;
+      border: 1px solid var(--line);
+      background: #10131a;
+      color: var(--text);
+      border-radius: 13px;
+      padding: 12px 13px;
+      outline: none;
+      font: inherit;
+    }
+
+    textarea { min-height: 92px; resize: vertical; }
+
+    input:focus, select:focus, textarea:focus {
+      border-color: rgba(88,101,242,.9);
+      box-shadow: 0 0 0 3px rgba(88,101,242,.18);
+    }
+
+    .field { margin-bottom: 14px; }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      overflow: hidden;
+      border-radius: 16px;
+    }
+
+    th, td {
+      text-align: left;
+      padding: 13px 12px;
+      border-bottom: 1px solid var(--line);
+      vertical-align: top;
+      font-size: 14px;
+    }
+
+    th { color: var(--muted); background: rgba(255,255,255,.035); font-size: 12px; text-transform: uppercase; letter-spacing: .06em; }
+    tr:hover td { background: rgba(255,255,255,.025); }
+
+    .table-wrap { overflow-x: auto; }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 5px 9px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 800;
+      white-space: nowrap;
+    }
+
+    .b-pendiente { background: rgba(245,158,11,.16); color: #fcd34d; }
+    .b-aprobado { background: rgba(88,101,242,.18); color: #c7d2fe; }
+    .b-curso { background: rgba(14,165,233,.16); color: #bae6fd; }
+    .b-realizado { background: rgba(34,197,94,.16); color: #bbf7d0; }
+    .b-cancelado { background: rgba(239,68,68,.16); color: #fecaca; }
+    .b-reprogramado { background: rgba(168,85,247,.16); color: #e9d5ff; }
+    .b-sin-pruebas { background: rgba(251,113,133,.16); color: #fecdd3; }
+
+    .notice {
+      padding: 14px 15px;
+      border: 1px solid rgba(245,158,11,.35);
+      background: rgba(245,158,11,.10);
+      color: #fde68a;
+      border-radius: 16px;
+      margin-bottom: 16px;
+      line-height: 1.5;
+    }
+
+    .muted { color: var(--muted); }
+    .row-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+
+    .progress {
+      height: 10px;
+      background: #0b0d12;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      overflow: hidden;
+      margin-top: 9px;
+    }
+
+    .progress > div {
+      height: 100%;
+      background: linear-gradient(90deg, var(--accent-2), var(--accent));
+      width: 0%;
+    }
+
+    pre {
+      white-space: pre-wrap;
+      word-break: break-word;
+      background: #0b0d12;
+      border: 1px solid var(--line);
+      padding: 16px;
+      border-radius: 16px;
+      color: #e5e7eb;
+      max-height: 520px;
+      overflow: auto;
+    }
+
+    .footer-actions { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 14px; }
+
+    @media (max-width: 960px) {
+      .grid-4, .grid-3, .grid-2 { grid-template-columns: 1fr; }
+      .hero { align-items: flex-start; flex-direction: column; }
+      nav { position: static; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="hero">
+      <div>
+        <h1>Panel de Eventos Staff</h1>
+        <p class="subtitle">Organiza actividades semanales, controla evidencias, revisa el cumplimiento del staff y genera informes listos para copiar en Discord.</p>
+      </div>
+      <div class="pill" id="meetingPill">📅 Reunión: Domingo 20:00</div>
+    </div>
+  </header>
+
+  <main>
+    <nav id="tabs">
+      <button class="tab-btn active" data-tab="dashboard">Dashboard</button>
+      <button class="tab-btn" data-tab="calendar">Calendario</button>
+      <button class="tab-btn" data-tab="create">Crear actividad</button>
+      <button class="tab-btn" data-tab="staff">Staff</button>
+      <button class="tab-btn" data-tab="proposals">Propuestas</button>
+      <button class="tab-btn" data-tab="report">Informe Discord</button>
+      <button class="tab-btn" data-tab="rules">Normativa</button>
+      <button class="tab-btn" data-tab="settings">Ajustes</button>
+    </nav>
+
+    <section class="section active" id="dashboard">
+      <div class="grid grid-4" id="stats"></div>
+      <div class="grid grid-2" style="margin-top:16px;">
+        <div class="card">
+          <h2>Próximas actividades</h2>
+          <div class="table-wrap"><table id="upcomingTable"></table></div>
+        </div>
+        <div class="card">
+          <h2>Avisos automáticos</h2>
+          <div id="warnings"></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="calendar">
+      <div class="card">
+        <div style="display:flex; justify-content:space-between; gap:12px; align-items:center; flex-wrap:wrap;">
+          <h2>Calendario de actividades</h2>
+          <button class="ghost" onclick="exportData()">Exportar copia JSON</button>
+        </div>
+        <div class="table-wrap"><table id="eventsTable"></table></div>
+      </div>
+    </section>
+
+    <section class="section" id="create">
+      <div class="card">
+        <h2>Nueva actividad</h2>
+        <div class="notice">La web avisará si la actividad no cumple duración mínima, límite de staff por sala o falta de evidencias. Aun así, puedes guardarla como pendiente si necesita revisión.</div>
+        <form id="eventForm">
+          <div class="grid grid-3">
+            <div class="field"><label>Fecha</label><input required type="date" name="date"></div>
+            <div class="field"><label>Hora</label><input required type="time" name="time"></div>
+            <div class="field"><label>Duración en minutos</label><input required type="number" min="10" step="5" name="duration" value="60"></div>
+          </div>
+          <div class="grid grid-3">
+            <div class="field"><label>Staff principal</label><input required name="mainStaff" placeholder="Ej: Roger"></div>
+            <div class="field"><label>Staff apoyo, separado por comas</label><input name="supportStaff" placeholder="Ej: Ana, Marc"></div>
+            <div class="field"><label>Estado</label>
+              <select name="status">
+                <option>Pendiente</option><option>Aprobado</option><option>En curso</option><option>Realizado</option><option>Cancelado</option><option>Reprogramado</option><option>Sin pruebas</option>
+              </select>
+            </div>
+          </div>
+          <div class="grid grid-3">
+            <div class="field"><label>Juego / dinámica</label><input required name="game" placeholder="Ej: Gartic Phone, Minecraft, Trivia"></div>
+            <div class="field"><label>Tipo</label>
+              <select name="type"><option>Actividad normal</option><option>Dinámica / minijuego</option><option>Evento grande</option><option>Evento especial</option><option>Torneo</option></select>
+            </div>
+            <div class="field"><label>Sala</label>
+              <select name="room"><option>Sala normal</option><option>Sala grande</option><option>Sala eventos</option><option>Stage</option><option>Otro canal</option></select>
+            </div>
+          </div>
+          <div class="grid grid-2">
+            <div class="field"><label>Evidencias / capturas / links de logs</label><textarea name="evidence" placeholder="Pega links de capturas, mensaje de inicio, logs, etc."></textarea></div>
+            <div class="field"><label>Notas / incidencias</label><textarea name="notes" placeholder="Resumen, incidencias, resultado final..."></textarea></div>
+          </div>
+          <div id="eventFormWarnings"></div>
+          <button class="primary" type="submit">Guardar actividad</button>
+        </form>
+      </div>
+    </section>
+
+    <section class="section" id="staff">
+      <div class="card">
+        <h2>Cumplimiento semanal del staff</h2>
+        <p class="muted">Cuenta actividades marcadas como Realizado durante la semana actual.</p>
+        <div id="staffCards" class="grid grid-3"></div>
+      </div>
+    </section>
+
+    <section class="section" id="proposals">
+      <div class="grid grid-2">
+        <div class="card">
+          <h2>Nueva propuesta especial</h2>
+          <form id="proposalForm">
+            <div class="field"><label>Nombre del evento</label><input required name="name" placeholder="Ej: Torneo de Minecraft"></div>
+            <div class="grid grid-2">
+              <div class="field"><label>Responsable</label><input required name="owner"></div>
+              <div class="field"><label>Fecha tentativa</label><input type="date" name="date"></div>
+            </div>
+            <div class="field"><label>Juego / formato</label><input required name="game"></div>
+            <div class="field"><label>Reglas, premios, riesgos y plan B</label><textarea required name="details"></textarea></div>
+            <div class="field"><label>Estado</label><select name="status"><option>En revisión</option><option>Aprobado</option><option>Pedir cambios</option><option>Rechazado</option><option>Preparado</option></select></div>
+            <button class="primary" type="submit">Guardar propuesta</button>
+          </form>
+        </div>
+        <div class="card">
+          <h2>Propuestas abiertas</h2>
+          <div class="table-wrap"><table id="proposalTable"></table></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="report">
+      <div class="card">
+        <h2>Generador de informe para Discord</h2>
+        <p class="muted">Copia este informe y pégalo en tu canal de staff o actas.</p>
+        <pre id="discordReport"></pre>
+        <div class="footer-actions">
+          <button class="primary" onclick="copyReport()">Copiar informe</button>
+          <button class="ghost" onclick="renderAll()">Actualizar</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="rules">
+      <div class="card">
+        <h2>Normativa interna de actividades</h2>
+        <pre id="rulesText"></pre>
+      </div>
+    </section>
+
+    <section class="section" id="settings">
+      <div class="card">
+        <h2>Ajustes del sistema</h2>
+        <form id="settingsForm">
+          <div class="grid grid-3">
+            <div class="field"><label>Mínimo semanal por staff</label><input type="number" min="1" name="weeklyMin"></div>
+            <div class="field"><label>Duración mínima, minutos</label><input type="number" min="10" name="minDuration"></div>
+            <div class="field"><label>Reunión semanal</label><input name="meeting"></div>
+          </div>
+          <div class="field"><label>Lista de staff, uno por línea</label><textarea name="staffList"></textarea></div>
+          <button class="primary" type="submit">Guardar ajustes</button>
+          <button class="danger" type="button" onclick="resetData()">Borrar todos los datos</button>
+        </form>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const STORAGE_KEY = 'staff-events-panel-v1';
+
+    const defaultState = {
+      config: {
+        weeklyMin: 3,
+        minDuration: 60,
+        meeting: 'Domingo 20:00',
+        staffList: ['Staff 1', 'Staff 2', 'Staff 3']
+      },
+      events: [],
+      proposals: []
+    };
+
+    let state = loadState();
+
+    function loadState() {
+      try {
+        const saved = localStorage.getItem(STORAGE_KEY);
+        return saved ? JSON.parse(saved) : structuredClone(defaultState);
+      } catch {
+        return structuredClone(defaultState);
+      }
+    }
+
+    function saveState() {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    }
+
+    function uid() {
+      return crypto.randomUUID ? crypto.randomUUID() : String(Date.now() + Math.random());
+    }
+
+    function esc(value) {
+      return String(value ?? '').replace(/[&<>"]/g, char => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[char]));
+    }
+
+    function statusClass(status) {
+      return 'b-' + String(status).toLowerCase().replaceAll(' ', '-').replace('en-curso', 'curso');
+    }
+
+    function parseSupport(value) {
+      return String(value || '').split(',').map(s => s.trim()).filter(Boolean);
+    }
+
+    function todayISO() {
+      return new Date().toISOString().slice(0, 10);
+    }
+
+    function getWeekRange(date = new Date()) {
+      const d = new Date(date);
+      const day = d.getDay() || 7;
+      const monday = new Date(d);
+      monday.setDate(d.getDate() - day + 1);
+      monday.setHours(0,0,0,0);
+      const sunday = new Date(monday);
+      sunday.setDate(monday.getDate() + 6);
+      sunday.setHours(23,59,59,999);
+      return { monday, sunday };
+    }
+
+    function isThisWeek(dateString) {
+      if (!dateString) return false;
+      const eventDate = new Date(dateString + 'T12:00:00');
+      const { monday, sunday } = getWeekRange();
+      return eventDate >= monday && eventDate <= sunday;
+    }
+
+    function thisWeekEvents() {
+      return state.events.filter(e => isThisWeek(e.date));
+    }
+
+    function setTab(tabId) {
+      document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.toggle('active', btn.dataset.tab === tabId));
+      document.querySelectorAll('.section').forEach(section => section.classList.toggle('active', section.id === tabId));
+      renderAll();
+    }
+
+    document.getElementById('tabs').addEventListener('click', e => {
+      const btn = e.target.closest('[data-tab]');
+      if (btn) setTab(btn.dataset.tab);
+    });
+
+    document.getElementById('eventForm').addEventListener('submit', e => {
+      e.preventDefault();
+      const data = Object.fromEntries(new FormData(e.target).entries());
+      const event = {
+        id: uid(),
+        date: data.date,
+        time: data.time,
+        duration: Number(data.duration || 0),
+        mainStaff: data.mainStaff.trim(),
+        supportStaff: data.supportStaff.trim(),
+        game: data.game.trim(),
+        type: data.type,
+        room: data.room,
+        status: data.status,
+        evidence: data.evidence.trim(),
+        notes: data.notes.trim(),
+        createdAt: new Date().toISOString()
+      };
+      state.events.push(event);
+      includeStaff(event.mainStaff);
+      parseSupport(event.supportStaff).forEach(includeStaff);
+      saveState();
+      e.target.reset();
+      e.target.duration.value = state.config.minDuration;
+      renderAll();
+      setTab('calendar');
+    });
+
+    document.getElementById('proposalForm').addEventListener('submit', e => {
+      e.preventDefault();
+      const data = Object.fromEntries(new FormData(e.target).entries());
+      state.proposals.push({ id: uid(), ...data, createdAt: new Date().toISOString() });
+      saveState();
+      e.target.reset();
+      renderAll();
+    });
+
+    document.getElementById('settingsForm').addEventListener('submit', e => {
+      e.preventDefault();
+      const data = Object.fromEntries(new FormData(e.target).entries());
+      state.config.weeklyMin = Number(data.weeklyMin || 3);
+      state.config.minDuration = Number(data.minDuration || 60);
+      state.config.meeting = data.meeting.trim() || 'Domingo 20:00';
+      state.config.staffList = data.staffList.split('\n').map(s => s.trim()).filter(Boolean);
+      saveState();
+      renderAll();
+      alert('Ajustes guardados.');
+    });
+
+    function includeStaff(name) {
+      const clean = String(name || '').trim();
+      if (clean && !state.config.staffList.includes(clean)) state.config.staffList.push(clean);
+    }
+
+    function validateEvent(event) {
+      const warnings = [];
+      const staffCount = 1 + parseSupport(event.supportStaff).length;
+      if (event.duration < state.config.minDuration) warnings.push(`Duración inferior al mínimo de ${state.config.minDuration} min.`);
+      if (event.room === 'Sala normal' && staffCount > 2) warnings.push('Sala normal con más de 2 staff asignados.');
+      if (event.room === 'Sala grande' && staffCount > 3) warnings.push('Sala grande con más de 3 staff asignados.');
+      if (['Realizado', 'Aprobado'].includes(event.status) && !event.evidence) warnings.push('Faltan evidencias o links de logs.');
+      if (['Evento especial', 'Torneo'].includes(event.type) && event.status !== 'Aprobado' && event.status !== 'Realizado') warnings.push('Evento especial/torneo pendiente de aprobación.');
+      return warnings;
+    }
+
+    function renderStats() {
+      const week = thisWeekEvents();
+      const completed = week.filter(e => e.status === 'Realizado').length;
+      const pending = week.filter(e => ['Pendiente', 'Aprobado', 'En curso', 'Reprogramado'].includes(e.status)).length;
+      const noEvidence = week.filter(e => !e.evidence && e.status === 'Realizado').length;
+      const openProposals = state.proposals.filter(p => ['En revisión', 'Pedir cambios'].includes(p.status)).length;
+      const cards = [
+        ['Eventos esta semana', week.length],
+        ['Realizados', completed],
+        ['Pendientes', pending],
+        ['Sin pruebas', noEvidence],
+        ['Staff registrados', state.config.staffList.length],
+        ['Mínimo semanal', state.config.weeklyMin],
+        ['Propuestas abiertas', openProposals],
+        ['Reunión semanal', state.config.meeting]
+      ];
+      document.getElementById('stats').innerHTML = cards.map(([label, value]) => `
+        <div class="card">
+          <div class="stat-label">${esc(label)}</div>
+          <div class="stat-value">${esc(value)}</div>
+        </div>
+      `).join('');
+      document.getElementById('meetingPill').textContent = '📅 Reunión: ' + state.config.meeting;
+    }
+
+    function renderUpcoming() {
+      const upcoming = state.events
+        .filter(e => e.date >= todayISO() && e.status !== 'Cancelado')
+        .sort((a,b) => (a.date + a.time).localeCompare(b.date + b.time))
+        .slice(0, 8);
+      document.getElementById('upcomingTable').innerHTML = makeTable(
+        ['Fecha', 'Hora', 'Staff', 'Juego', 'Estado'],
+        upcoming.map(e => [e.date, e.time, e.mainStaff, e.game, badge(e.status)])
+      );
+    }
+
+    function renderWarnings() {
+      const allWarnings = state.events.flatMap(e => validateEvent(e).map(w => ({ event: e, warning: w })));
+      const staffMissing = staffStats().filter(s => s.completed < state.config.weeklyMin);
+      let html = '';
+      if (!allWarnings.length && !staffMissing.length) html = '<p class="muted">No hay avisos importantes ahora mismo.</p>';
+      if (staffMissing.length) {
+        html += `<div class="notice"><strong>Staff pendiente de mínimo semanal:</strong><br>${staffMissing.map(s => esc(`${s.name}: ${s.completed}/${state.config.weeklyMin}`)).join('<br>')}</div>`;
+      }
+      html += allWarnings.slice(0, 8).map(item => `
+        <div class="notice"><strong>${esc(item.event.date)} · ${esc(item.event.game)}</strong><br>${esc(item.warning)}</div>
+      `).join('');
+      document.getElementById('warnings').innerHTML = html;
+    }
+
+    function renderEventsTable() {
+      const events = [...state.events].sort((a,b) => (a.date + a.time).localeCompare(b.date + b.time));
+      document.getElementById('eventsTable').innerHTML = makeTable(
+        ['Fecha', 'Hora', 'Staff', 'Juego', 'Tipo', 'Sala', 'Duración', 'Estado', 'Pruebas', 'Acciones'],
+        events.map(e => [
+          e.date,
+          e.time,
+          `${esc(e.mainStaff)}${e.supportStaff ? '<br><span class="muted">Apoyo: ' + esc(e.supportStaff) + '</span>' : ''}`,
+          `${esc(e.game)}${e.notes ? '<br><span class="muted">' + esc(e.notes).slice(0, 90) + '</span>' : ''}`,
+          e.type,
+          e.room,
+          e.duration + ' min',
+          statusSelect(e),
+          e.evidence ? '✅ Sí' : '⚠️ No',
+          `<div class="row-actions"><button class="small-btn ghost" onclick="duplicateEvent('${e.id}')">Duplicar</button><button class="small-btn danger" onclick="deleteEvent('${e.id}')">Borrar</button></div>`
+        ])
+      );
+    }
+
+    function statusSelect(event) {
+      const statuses = ['Pendiente', 'Aprobado', 'En curso', 'Realizado', 'Cancelado', 'Reprogramado', 'Sin pruebas'];
+      return `<select onchange="updateEventStatus('${event.id}', this.value)">${statuses.map(s => `<option ${event.status === s ? 'selected' : ''}>${s}</option>`).join('')}</select>`;
+    }
+
+    function badge(status) {
+      return `<span class="badge ${statusClass(status)}">${esc(status)}</span>`;
+    }
+
+    function makeTable(headers, rows) {
+      if (!rows.length) return '<tr><td class="muted">No hay datos todavía.</td></tr>';
+      return `
+        <thead><tr>${headers.map(h => `<th>${esc(h)}</th>`).join('')}</tr></thead>
+        <tbody>${rows.map(row => `<tr>${row.map(cell => `<td>${cell}</td>`).join('')}</tr>`).join('')}</tbody>
+      `;
+    }
+
+    function updateEventStatus(id, status) {
+      const event = state.events.find(e => e.id === id);
+      if (!event) return;
+      event.status = status;
+      saveState();
+      renderAll();
+    }
+
+    function duplicateEvent(id) {
+      const event = state.events.find(e => e.id === id);
+      if (!event) return;
+      state.events.push({ ...event, id: uid(), status: 'Pendiente', createdAt: new Date().toISOString() });
+      saveState();
+      renderAll();
+    }
+
+    function deleteEvent(id) {
+      if (!confirm('¿Borrar esta actividad?')) return;
+      state.events = state.events.filter(e => e.id !== id);
+      saveState();
+      renderAll();
+    }
+
+    function deleteProposal(id) {
+      if (!confirm('¿Borrar esta propuesta?')) return;
+      state.proposals = state.proposals.filter(p => p.id !== id);
+      saveState();
+      renderAll();
+    }
+
+    function staffStats() {
+      const week = thisWeekEvents().filter(e => e.status === 'Realizado');
+      return state.config.staffList.map(name => {
+        const completed = week.filter(e => e.mainStaff === name || parseSupport(e.supportStaff).includes(name)).length;
+        return { name, completed };
+      });
+    }
+
+    function renderStaff() {
+      const min = state.config.weeklyMin;
+      document.getElementById('staffCards').innerHTML = staffStats().map(s => {
+        const percent = Math.min(100, Math.round((s.completed / min) * 100));
+        const stateText = s.completed >= min ? '✅ Cumpliendo' : '⚠️ Pendiente';
+        return `
+          <div class="card">
+            <h3>${esc(s.name)}</h3>
+            <div class="stat-value">${s.completed}/${min}</div>
+            <div class="muted">${stateText}</div>
+            <div class="progress"><div style="width:${percent}%"></div></div>
+          </div>
+        `;
+      }).join('') || '<p class="muted">Añade staff desde Ajustes.</p>';
+    }
+
+    function renderProposals() {
+      document.getElementById('proposalTable').innerHTML = makeTable(
+        ['Nombre', 'Responsable', 'Fecha', 'Juego', 'Estado', 'Acciones'],
+        state.proposals.map(p => [
+          esc(p.name), esc(p.owner), esc(p.date || '-'), esc(p.game), badge(p.status),
+          `<button class="small-btn danger" onclick="deleteProposal('${p.id}')">Borrar</button>`
+        ])
+      );
+    }
+
+    function renderReport() {
+      const week = thisWeekEvents();
+      const completed = week.filter(e => e.status === 'Realizado');
+      const pending = week.filter(e => ['Pendiente', 'Aprobado', 'En curso', 'Reprogramado'].includes(e.status));
+      const noEvidence = completed.filter(e => !e.evidence);
+      const staffOk = staffStats().filter(s => s.completed >= state.config.weeklyMin).length;
+      const lines = [];
+      lines.push(':actyellowhearts: Informe semanal de actividades :actyellowhearts:');
+      lines.push(':18706whitestar: ¡BASE DE DATOS DE EVENTOS! :18706whitestar:');
+      lines.push('');
+      lines.push(`:arrowlg: Eventos programados esta semana: ${week.length}`);
+      lines.push(`:arrowlg: Eventos realizados: ${completed.length}`);
+      lines.push(`:arrowlg: Eventos pendientes / activos: ${pending.length}`);
+      lines.push(`:arrowlg: Eventos realizados sin pruebas: ${noEvidence.length}`);
+      lines.push(`:arrowlg: Staff con mínimo completado: ${staffOk}/${state.config.staffList.length}`);
+      lines.push(`:arrowlg: Mínimo semanal por staff: ${state.config.weeklyMin}`);
+      lines.push(`:arrowlg: Duración mínima por actividad: ${state.config.minDuration} min`);
+      lines.push(`:arrowlg: Reunión semanal: ${state.config.meeting}`);
+      lines.push('');
+      lines.push(':18706whitestar: Próximas actividades :18706whitestar:');
+      const upcoming = state.events.filter(e => e.date >= todayISO() && e.status !== 'Cancelado').sort((a,b) => (a.date + a.time).localeCompare(b.date + b.time)).slice(0, 10);
+      if (!upcoming.length) lines.push('- No hay próximas actividades registradas.');
+      upcoming.forEach(e => lines.push(`- ${e.date} ${e.time} | ${e.game} | Staff: ${e.mainStaff}${e.supportStaff ? ' + ' + e.supportStaff : ''} | ${e.status}`));
+      lines.push('');
+      lines.push(':18706whitestar: Staff semanal :18706whitestar:');
+      staffStats().forEach(s => lines.push(`- ${s.name}: ${s.completed}/${state.config.weeklyMin} ${s.completed >= state.config.weeklyMin ? '✅' : '⚠️'}`));
+      lines.push('');
+      lines.push(':arrowlg: Recordatorio: las actividades deben tener responsable, juego/dinámica, duración mínima, evidencias y verificación por logs.');
+      document.getElementById('discordReport').textContent = lines.join('\n');
+    }
+
+    function renderRules() {
+      document.getElementById('rulesText').textContent = `:actyellowhearts: Normativa de actividades del staff :actyellowhearts:\n\n` +
+      `:arrowlg: Mínimo de actividades semanales por staff: ${state.config.weeklyMin}\n` +
+      `:arrowlg: Duración mínima por actividad: ${state.config.minDuration} min\n` +
+      `:arrowlg: Máximo recomendado en sala normal: 2 staff\n` +
+      `:arrowlg: Máximo recomendado en sala grande: 3 staff\n` +
+      `:arrowlg: Cada actividad debe tener staff principal, juego/dinámica, sala/canal y horario definido.\n` +
+      `:arrowlg: Las capturas, evidencias o links de logs son obligatorios al cerrar una actividad.\n` +
+      `:arrowlg: No cuentan salas puramente sociales sin dinámica organizada.\n` +
+      `:arrowlg: Juegos de alto coste, premios, torneos o eventos especiales requieren aprobación previa.\n` +
+      `:arrowlg: Las ausencias y cambios deben avisarse con antelación.\n` +
+      `:arrowlg: La reunión semanal sirve para revisar cumplimiento, horarios, juegos, propuestas e incidencias.`;
+    }
+
+    function renderSettings() {
+      const form = document.getElementById('settingsForm');
+      form.weeklyMin.value = state.config.weeklyMin;
+      form.minDuration.value = state.config.minDuration;
+      form.meeting.value = state.config.meeting;
+      form.staffList.value = state.config.staffList.join('\n');
+    }
+
+    function copyReport() {
+      const text = document.getElementById('discordReport').textContent;
+      navigator.clipboard.writeText(text).then(() => alert('Informe copiado.'));
+    }
+
+    function exportData() {
+      const blob = new Blob([JSON.stringify(state, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'copia-panel-eventos-staff.json';
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+
+    function resetData() {
+      if (!confirm('Esto borrará eventos, propuestas y ajustes guardados en este navegador. ¿Continuar?')) return;
+      state = structuredClone(defaultState);
+      saveState();
+      renderAll();
+    }
+
+    function renderAll() {
+      renderStats();
+      renderUpcoming();
+      renderWarnings();
+      renderEventsTable();
+      renderStaff();
+      renderProposals();
+      renderReport();
+      renderRules();
+      renderSettings();
+    }
+
+    document.querySelector('#eventForm [name="date"]').value = todayISO();
+    document.querySelector('#eventForm [name="duration"]').value = state.config.minDuration;
+    renderAll();
+  </script>
+</body>
+</html>
