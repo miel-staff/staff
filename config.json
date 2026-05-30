@@ -1,14 +1,51 @@
 {
-  "weeklyMin": 4,
-  "minDuration": 20,
-  "meeting": "Sábado xx:xx",
+  "panelTitle": "Panel de Eventos Staff",
+  "panelSubtitle": "Organiza actividades semanales, controla evidencias, revisa el cumplimiento del staff y genera informes listos para copiar en Discord.",
+  "weeklyMin": 3,
+  "minDuration": 60,
+  "meeting": "Domingo 20:00",
   "staffList": [
     "Miel",
+    "Roger",
     "Staff 1",
-    "Staff 2",
-    "Staff 3"
+    "Staff 2"
   ],
   "maxStaffNormalRoom": 2,
   "maxStaffLargeRoom": 3,
-  "requireEvidence": true
+  "requireEvidence": true,
+  "activityTypes": [
+    "Actividad normal",
+    "Dinámica / minijuego",
+    "Evento grande",
+    "Evento especial",
+    "Torneo"
+  ],
+  "rooms": [
+    "Sala normal",
+    "Sala grande",
+    "Sala eventos",
+    "Stage",
+    "Otro canal"
+  ],
+  "statuses": [
+    "Pendiente",
+    "Aprobado",
+    "En curso",
+    "Realizado",
+    "Cancelado",
+    "Reprogramado",
+    "Sin pruebas"
+  ],
+  "proposalStatuses": [
+    "En revisión",
+    "Aprobado",
+    "Pedir cambios",
+    "Rechazado",
+    "Preparado"
+  ],
+  "emojis": {
+    "title": ":actyellowhearts:",
+    "star": ":18706whitestar:",
+    "arrow": ":arrowlg:"
+  }
 }
