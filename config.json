@@ -3,7 +3,7 @@
   "panelSubtitle": "Organiza actividades semanales, controla evidencias, revisa el cumplimiento del staff y genera informes listos para copiar en Discord.",
   "weeklyMin": 3,
   "minDuration": 60,
-  "meeting": "Poner dia y hora",
+  "meeting": "Ejemplo 00:00",
   "staffList": [
     "Miel",
     "Roger",
